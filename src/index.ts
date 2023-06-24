@@ -3,6 +3,7 @@ import { boids2d } from "./main2d";
 import { boids3d } from "./main3d";
 import { WebGPUEngine } from "@babylonjs/core";
 
+// debugger
 let is3D = false;
 let engine: WebGPUEngine | null;
 const optionsUI2D = document.getElementById("options2d") as HTMLElement;
@@ -30,7 +31,7 @@ const startScene = async () => {
   optionsUI3D.style.display = is3D ? "block" : "none";
   engine?.dispose();
   engine = null;
-
+  
   boidSlider.valueAsNumber = 5;
   if (is3D) {
     engine = await boids3d();

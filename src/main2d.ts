@@ -11,8 +11,10 @@ import { setupIncludes } from "./shaders";
 import { triangleMesh } from "./meshes/triangleMesh";
 import { createBoidMaterial, createComputeShaders } from "./shaders/2d";
 
+
 export const boids2d = async () => {
   let numBoids = 32;
+  // debugger
   const edgeMargin = 0.5;
   const maxSpeed = 2;
   const visualRange = 0.5;
@@ -118,12 +120,38 @@ export const boids2d = async () => {
     blocks = Math.ceil(gridTotalCells / blockSize);
 
     // Boids
-    boidsComputeBuffer = new StorageBuffer(engine, numBoids * 16);
+    // 4 4 bytes are float32 position argument of vector and two vector in struct
+    boidsComputeBuffer = new StorageBuffer(engine, numBoids * 16); 
     boidsComputeBuffer2 = new StorageBuffer(engine, numBoids * 16);
 
     // Load texture and materials
     boidMat = createBoidMaterial(scene);
     boidMat.setStorageBuffer("boids", boidsComputeBuffer);
+
+
+    const readDataFromBuffer = async () => {
+      const data = await boidsComputeBuffer.read();
+
+      // Convert raw data to Boid struct format
+      const boids = [];
+      const numBoids = data.byteLength / 16; // Assuming each Boid is 16 bytes (4 floats of 4 bytes each)
+
+      for (let i = 0; i < numBoids; i++) {
+        const pos = new Float32Array(data.buffer, i * 16, 2); // Read 2 floats (8 bytes) for pos
+        const vel = new Float32Array(data.buffer, i * 16 + 8, 2); // Read 2 floats (8 bytes) for vel
+
+        boids.push({
+          pos: Vector2.FromArray([pos[0], pos[1]]),
+          vel: Vector2.FromArray([vel[0], vel[1]]),
+        });
+      }
+
+      console.log(boids); // Array of Boid structs
+    };
+    
+    // Set an interval to read the data every 5 seconds
+    setInterval(readDataFromBuffer, 5000);
+    // console.log(boidsComputeBuffer.read())
 
     // Create boid mesh
     const boidMesh = new Mesh("custom", scene);
@@ -309,6 +337,7 @@ export const boids2d = async () => {
 
     let swap = false;
     for (let d = 1; d < gridTotalCells; d *= 2) {
+      // console.log("deneme -- " + d );
       sumBucketsComputeShader.setStorageBuffer(
         "gridSumsIn",
         swap ? gridSumsBuffer2 : gridSumsBuffer

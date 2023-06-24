@@ -1,6 +1,7 @@
 #include<sceneUboDeclaration>
 #include<boidInclude>
 
+
 var<storage,read> boids: array<Boid>;
 var<storage,read> boidVertices : array<vec3<f32>>;
 
